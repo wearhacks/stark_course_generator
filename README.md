@@ -143,11 +143,11 @@ You can optionally supply a media file (e.g. to illustrate what the result shoul
 <pre>
 stark list <b>course_name</b>
 </pre>
-Shows the course content within the current course's context (see what you would get above right after starting the course).
+Shows the course content for the given course (as a file tree, with relevant information for each card).
 
 ### Run Your Tests
-You add tests in test files that come with your code cards. The files are generated when you create the card 
-For the Arduino platform, those tests are based on Arduino Mock.
+You add tests in test files that come with your code cards. The files are generated when you create the card.
+For Arduinos, tests are based on Arduino Mock.
 
 <pre>
 stark test <b>course_name</b>
