@@ -24,10 +24,9 @@ $ gem install stark
 
 ## Usage
 
-Please read the documentation at https://github.com/wearhacks/stark_course_generator!
+Please read the documentation at https://github.com/wearhacks/stark_course_generator/wiki!
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/gkentr/stark.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com//stark_course_generator
 
 ## License
 
