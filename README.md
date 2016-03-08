@@ -233,19 +233,21 @@ it is published.
 
 Ideally, your workflow would be along these lines:
 
-1. You have a great idea about how people can learn by doing something on an Arduino.
+1. You have a great idea about how people can learn by doing something on an Arduino (ideally any devide but for now let's just say it's an Arduino).
 2. You work out the details - how you would explain things, formulate subproblems to be solved to reach a learning objective etc.
 3. You do something along those lines:
 
 ``` shell
 $ cd stark_course_generator
-$ mkdir -p "courses/Blink/1 - Introduction To Arduino Programming"
-$ cd courses/Blink
-$ stark add "1 - Introduction To Arduino Programming"/"1 - Instructions"
+$ stark init my_awesome_course
+$ cd courses/my_awesome_course
+$ mkdir 1 - Some Chapter
+$ stark add "1 - Some Chapter"
 
-# add code cards etc.
+... 
+# add cards, work out code, tests etc.
 
-$ stark validate Blink
+$ stark validate my_awesome_course
 
 # Oh noes! Something was wrong
 # (Fixing...)
