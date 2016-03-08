@@ -1,0 +1,3 @@
+<card title="Make your Arduino blink!">
+    <code src="blink_template.ino" solution="blink_solution.ino" test="blink_test.ino" difficulty="easy"/>
+</card>
