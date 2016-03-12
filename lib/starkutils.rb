@@ -14,6 +14,7 @@ module StarkUtils
 
   RESOURCE_DIR = File.join(File.dirname(File.expand_path(__FILE__)), '../resources')
 
+
   # Dispatches to a platform-specific bootstrapping method.
   def StarkUtils.bootstrap_course(args = [])
     course_name = StarkUtils.get_necessary_argument(
@@ -67,9 +68,7 @@ module StarkUtils
   # If the given directory contains a Stark Labs course, it will pretty-print
   # its contents in the form of a directory tree.
   def StarkUtils.list_course_contents(args)
-    dir = StarkUtils.get_necessary_argument(
-            args,
-            "Cool, but where's your course? :-) ")
+    dir = StarkUtils.get_necessary_argument( args, "Cool, but where's your course? :-) ")
 
     if valid_course_dir?(dir)
       print_tree(dir)
@@ -80,9 +79,7 @@ module StarkUtils
   end
 
 
-  #####################
-  # General Utilities #
-  #####################
+  private
 
   # Gets a non-empty, necessary command argument from the user if the given arguments
   # are non-empty. A block can be supplied optionally to perform input validation
@@ -108,16 +105,15 @@ module StarkUtils
     end
   end
 
-  private
-
 
   # Bootstrap a course for Arduino (default platform).
   def StarkUtils.bootstrap_arduino_course(course_name)
-    proceed = Dir.exists?("#{course_name}") ? do_gracefully {
-      agree("#{course_name} exists already there - creating a course " +
-      "with the same name will drop everything under there. " +
-      "Proceed? (yes/no) ")
-    } : true
+    proceed = Dir.exists?("#{course_name}") ? 
+                do_gracefully do
+                  agree("#{course_name} exists already there - creating " +
+                    "a course with the same name will drop everything " +
+                    "under there. Proceed? (yes/no) ")
+                end : true
     return if !proceed
 
     puts "Creating #{course_name} based on the Arduino template..."

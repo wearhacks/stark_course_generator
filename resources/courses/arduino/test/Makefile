@@ -121,6 +121,8 @@ arduino_mock_all.a : ArduinoMockAll.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
+# TODO: Should create the links dynamically when running "stark test" ?
+
 blink_test.o : $(COURSE_HOME)/.links/1_2/blink_test.cc \
 				$(COURSE_HOME)/.links/1_2/blink_solution.ino \
 				$(GTEST_HEADERS)
