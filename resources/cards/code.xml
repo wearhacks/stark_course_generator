@@ -1,0 +1,7 @@
+ <!-- TODO: 1. Add a title to the card.
+            2. Add references to your code files.
+               Keep your code in the same directory preferably. 
+            3. Leave one applicable difficulty level. -->
+<card title="">
+    <code src="" solution="" test="" difficulty="easy|medium|hard"/>
+</card>
