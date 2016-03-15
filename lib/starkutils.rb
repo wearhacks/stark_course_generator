@@ -17,9 +17,9 @@ module StarkUtils
 
   CHAPCARD_REGEX = /\A[0-9]{1,3}\s*-\s*\w[\w|\s]+\Z/ # used for both chapters and cards
 
-  MAKEFILE_FILE = File.join("test", "Makefile")
+  MAKEFILE = File.join("test", "Makefile")
 
-  MAKEFILE_FILE_BACKUP = File.join("test", ".Makefile.bak")
+  MAKEFILE_BACKUP = "." + MAKEFILE + ".bak"
 
   RESOURCE_DIR = File.join(File.dirname(File.expand_path(__FILE__)), '../resources')
 
@@ -79,7 +79,7 @@ module StarkUtils
 
   
   def StarkUtils.compile_and_test(args)
-    dir = StarkUtils.get_necessary_argument( args, "Cool, but where's your course? :-) ")
+    dir = StarkUtils.get_necessary_argument(args, "Cool, but where's your course? :-) ")
 
     unless valid_course_dir?(dir)
       say_warning "This directory does not contain a Stark Labs course. Are you " +
@@ -149,8 +149,8 @@ module StarkUtils
     
     # Back up the template, generate the makefile, run the targets and copy the
     # template back.
-    makefile = File.join(dir, MAKEFILE_FILE)
-    makefile_bak = File.join(dir, MAKEFILE_FILE_BACKUP)
+    makefile = File.join(dir, MAKEFILE)
+    makefile_bak = File.join(dir, MAKEFILE_BACKUP)
     FileUtils.cp(makefile, makefile_bak)
    
     content = File.read(makefile) 
