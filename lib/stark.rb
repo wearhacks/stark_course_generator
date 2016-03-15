@@ -4,10 +4,9 @@
 require 'rubygems'
 require 'commander'
 require 'fileutils'
+require_relative 'starkutils'
 
 module Stark
-
-  require_relative 'starkutils'
 
   class Stark
     include Commander::Methods
@@ -77,13 +76,14 @@ module Stark
       end
 
       command :test do |c|
-        c.syntax = 'stark test [options]'
-        c.summary = ''
-        c.description = ''
-        c.example 'description', 'command example'
-        c.option '--some-switch', 'Some switch that does something'
+        c.syntax = 'stark test <path/to/course/root>'
+        c.summary = 'Compiles all the solution and test code to which your code ' +
+                    'cards refer and, if compilation is fine, runs the tests.'
+        c.description = 'Compiles all the solution and test code to which your code ' +
+                    'cards refer and, if compilation is fine, runs the tests.'
+        c.example 'Compiles and tests the solution code and tests for Blink:', 'stark test Blink'
         c.action do |args, options|
-          # Do something or c.when_called stark::Commands::Test
+          StarkUtils.compile_and_test(args)
         end
       end
 

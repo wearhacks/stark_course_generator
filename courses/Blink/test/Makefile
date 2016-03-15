@@ -21,7 +21,7 @@ COURSE_HOME = ..
 # It is recommended to have an installation that all your projects use
 # instead of copying it inside every project.
 # Remember to tweak this if you move this file.
-ARDUINO_MOCK_DIR = $(COURSE_HOME)/../../lib/test/arduino-mock
+ARDUINO_MOCK_DIR = $(COURSE_HOME)/../.arduino_lib/test/arduino-mock
 
 # Points to the root of Google Test, relative to where this file is.
 # By default, Google Test is packaged with Arduino Mock;
@@ -48,7 +48,6 @@ CXXFLAGS += -g -Wall -Wextra -pthread \
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = blink_test
-
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -121,12 +120,3 @@ arduino_mock_all.a : ArduinoMockAll.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-blink_test.o : $(COURSE_HOME)/.links/1_2/blink_test.cc \
-				$(COURSE_HOME)/.links/1_2/blink_solution.ino \
-				$(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(COURSE_HOME)/.links/1_2/blink_test.cc
-
-blink_test : $(COURSE_HOME)/.links/1_2/blink_test.o \
-				gmock_main.a  \
-				arduino_mock_all.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

@@ -21,7 +21,7 @@ COURSE_HOME = ..
 # It is recommended to have an installation that all your projects use
 # instead of copying it inside every project.
 # Remember to tweak this if you move this file.
-ARDUINO_MOCK_DIR = $(COURSE_HOME)/../../lib/test/arduino-mock
+ARDUINO_MOCK_DIR = $(COURSE_HOME)/../.arduino_lib/test/arduino-mock
 
 # Points to the root of Google Test, relative to where this file is.
 # By default, Google Test is packaged with Arduino Mock;
