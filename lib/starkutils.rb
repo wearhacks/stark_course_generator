@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'commander/import'
 require 'nokogiri'
+require 'rexml/document'
 
 # TODO Refactor this, it's procedural & monolithic AF
 module StarkUtils
@@ -14,18 +15,22 @@ module StarkUtils
   COURSE_MARKER_FILE = ".stark.yml"
 
   COURSE_NAME_REGEX = /\A[A-z|\s]+\Z/
-
+  
   CHAPCARD_REGEX = /\A[0-9]{1,3}\s*-\s*\w[\w|\s]+\Z/ # used for both chapters and cards
 
   MAKEFILE = File.join("test", "Makefile")
 
-  MAKEFILE_BACKUP = "." + MAKEFILE + ".bak"
+  MAKEFILE_BACKUP = File.join("test", "Makefile.bak")
 
-  RESOURCE_DIR = File.join(File.dirname(File.expand_path(__FILE__)), '../resources')
+  RESOURCE_DIR = File.join(File.dirname(File.expand_path(__FILE__)), "..", "resources")
 
   ARDUINO_TEMPLATE = File.join(RESOURCE_DIR, "courses", "arduino", ".")
 
   ARDUINO_LIB_RESOURCE = File.join(RESOURCE_DIR, "courses", ARDUINO_LIB_DIR)
+  
+  COURSE_SCHEMA = File.join(RESOURCE_DIR, "maester.xsd")
+  
+  TEMPLATES_DIR = File.join(RESOURCE_DIR, "templates")
 
 
   # Dispatches to a platform-specific bootstrapping method.
@@ -52,7 +57,8 @@ module StarkUtils
   def StarkUtils.add_card(args)
     chapter_dir = StarkUtils.get_necessary_argument(args, "Provide the path to one of your course's chapters: ")
     valid_course_dir = StarkUtils.valid_course_dir?(chapter_dir, [".."])
-    if !valid_course_dir
+
+    unless valid_course_dir
       say_warning "This directory does not actually contain a chapter. Are you sure you made its parent with \"stark init\"? :-)"
       return
     end
@@ -64,7 +70,7 @@ module StarkUtils
                     "\"1 - Connect Your Arduino\") " +
                     "- it has to match that format!: ") { |card_name| foo = (card_name =~ CHAPCARD_REGEX) }
 
-    card_template = File.join(RESOURCE_DIR, "cards", card_choice.to_s.downcase.concat(".xml"))
+    card_template = File.join(TEMPLATES_DIR, card_choice.to_s.downcase.concat(".xml"))
     card_dir = File.join(chapter_dir, card_name)
 
     begin
@@ -114,8 +120,8 @@ module StarkUtils
         any_error = true unless any_error 
         next
       end
-      unless solution && File.exist?(card.sub(CODE_CARD_FILE, solution))
-        say_error "Um, your test for #{card} doesn't seem to exist (read \"#{solution}\")..." 
+      unless test && File.exist?(card.sub(CODE_CARD_FILE, test))
+        say_error "Um, your test for #{card} doesn't seem to exist (read \"#{test}\")..." 
         any_error = true unless any_error 
         next
       end
@@ -180,6 +186,32 @@ module StarkUtils
       say_warning "This directory does not contain a Stark Labs course. Are you " +
         "sure you made it with \"stark init\"? :-)"
     end
+  end
+  
+  
+  # If the parameter directory contains a course, objects are checked for validity 
+  # against the platform's restrictions.
+  def StarkUtils.validate_course(args)
+    dir = StarkUtils.get_necessary_argument(args, "Cool, but where's your course? :-) ")
+
+    unless valid_course_dir?(dir)
+      say_warning "This directory does not contain a Stark Labs course. Are you " +
+                    "sure you made it with \"stark init\"? :-)"
+      return
+    end
+    
+    course_doc = assemble_course(dir)
+    puts "Assembled course:\n"
+    puts "#{StarkUtils.pretty_print_xml(course_doc.to_xml)}\n\n"
+    errors = validate_against_xsd(course_doc)
+    if errors.empty?
+      puts "Your course looks valid. You can publish it with 'stark push'!"
+    else
+      puts "You have #{errors.size} errors (format: '<line#> - <error>'):"
+      errors.each { |error| puts "#{error.line + 1} - #{error.message}" }
+    end
+    
+    errors.empty?
   end
 
 
@@ -252,6 +284,54 @@ module StarkUtils
     start = File.join(path)
     levels.each { |l| start = File.join(start, l) }
     File.exist?(File.join(start, COURSE_MARKER_FILE))
+  end
+  
+  
+  def StarkUtils.assemble_course(dir)
+    doc = Nokogiri::XML(File.open(File.join(TEMPLATES_DIR, "course.xml")))
+    course = doc.root
+    course[:title] = File.basename(course[:title]) # get the title only
+
+    chapters = Dir.glob("#{dir}*#{File::SEPARATOR}").
+                   select{ |d| File.basename(d) =~ CHAPCARD_REGEX }
+
+    chapters.each do |chapter|
+      chapter_node = Nokogiri::XML::Node.new('chapter', course)
+      chapter_node[:title] = chapter
+      course.add_child(chapter_node)
+      
+      Dir.glob("#{chapter}*").each do |card_dir|
+        card_file = Dir.glob "#{card_dir}#{File::SEPARATOR}*.xml"
+        unless card_file.empty?
+          chapter_node.add_child(Nokogiri::XML.parse(File.read(card_file.first)).root)
+        end
+      end
+    end
+
+    doc
+  end
+  
+  
+  def StarkUtils.validate_against_xsd(doc)
+    # Need to write out a temp file for accurate error reporting - Nokogiri gives out
+    # messed up line numbers otherwise
+    temp_validation_file = ".course.tmp"
+    schema = Nokogiri::XML::Schema(File.read(COURSE_SCHEMA))
+    File.write(temp_validation_file, doc.to_xml)
+    errors = schema.validate(temp_validation_file)
+    FileUtils.rm(temp_validation_file, :force => true)
+    errors
+  end
+  
+  
+  def StarkUtils.pretty_print_xml(xml_s)
+    doc = REXML::Document.new(xml_s)
+    formatter = REXML::Formatters::Pretty.new
+    
+    # Format with proper indentation & add line numbers at the beginning 
+    # (better error reporting)
+    formatter.compact = true
+    formatter.write(doc.root, "").lines.map!.with_index {|line, i| "#{i + 1}> #{line}"}.join
   end
 
 end

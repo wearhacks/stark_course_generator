@@ -88,13 +88,15 @@ module Stark
       end
 
       command :validate do |c|
-        c.syntax = 'stark validate [options]'
-        c.summary = ''
-        c.description = ''
-        c.example 'description', 'command example'
-        c.option '--some-switch', 'Some switch that does something'
+        c.syntax = 'stark validate <path/to/course/root>'
+        c.summary = 'Validates the structure and contents of the course at the given location.'
+        c.description = 'Validates the structure and contents of the course at the given location:\n' +
+          'It might be helpful reading the restrictions: ' +
+          'https://github.com/wearhacks/stark_course_generator/wiki '
+        c.example 'Validates the structure and contents of Blink according to specified restrictions:', 
+          'stark validate Blink'
         c.action do |args, options|
-          # Do something or c.when_called stark::Commands::Validate
+          StarkUtils.validate_course(args)
         end
       end
 

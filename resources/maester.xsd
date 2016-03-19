@@ -49,7 +49,7 @@
                 maxOccurs="10" />
         </xs:sequence>
         <xs:attribute name="title" type="ShortStringType" use="required"/>
-        <xs:attribute name="objective" type="ShortStringType" use="required"/>
+        <xs:attribute name="objective" type="ShortStringType" use="optional"/>
     </xs:complexType>
 
 
@@ -58,13 +58,13 @@
         <xs:choice>
             <xs:sequence>
                 <xs:element name="instruction" type="InstructionType" />
-                <xs:element name="media" type="MediaType" minOccurs="0" maxOccurs="1" />
+                <xs:element name="medium" type="MediaType" minOccurs="0" maxOccurs="1" />
             </xs:sequence>
             <xs:element name="code" type="CodeType" />
-            <xs:element name="media" type="MediaType" />
+            <xs:element name="medium" type="MediaType" />
             <xs:sequence>
                 <xs:element name="question" type="QuestionType" />
-                <xs:element name="media" type="MediaType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="medium" type="MediaType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:choice>
         <xs:attribute name="title" type="ShortStringType" use="required"/>

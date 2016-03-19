@@ -3,5 +3,5 @@
         <correctAnswer>Yes</correctAnswer>
         <answerOption>No</answerOption>
     </question>
-    <media src="../media/arduino-blink.gif" />
+    <medium src="../medium/arduino-blink.gif" />
 </card>
