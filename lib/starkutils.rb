@@ -22,6 +22,8 @@ module StarkUtils
 
   MAKEFILE_BACKUP = File.join("test", "Makefile.bak")
 
+  CARD_SYMLINKS_DIR = ".links"
+
   RESOURCE_DIR = File.join(File.dirname(File.expand_path(__FILE__)), "..", "resources")
 
   ARDUINO_TEMPLATE = File.join(RESOURCE_DIR, "courses", "arduino", ".")
@@ -83,7 +85,9 @@ module StarkUtils
     end
   end
 
-  
+
+  # Attempts to compile and test all the code to which code cards refer to, given
+  # a directory that might contain a Stark Labs course.
   def StarkUtils.compile_and_test(args)
     dir = StarkUtils.get_necessary_argument(args, "Cool, but where's your course? :-) ")
 
@@ -103,12 +107,18 @@ module StarkUtils
     # solution files exist. If they do, make a symlink to the card and generate the 
     # targets that will be added to the makefile.
     
-    code_cards = Dir.glob("#{dir}/*/*/" + CODE_CARD_FILE)
+    code_card_files = Dir.glob("#{dir}*/*/" + CODE_CARD_FILE)
     any_error = false
     tests = []
     targets = []
+      
+    # TODO: Filter out directories that don't match the expected format (CHAPCARD_REGEX)
 
-    code_cards.each do |card|
+    clear_symlinks(dir)
+
+    code_card_files.each do |card|
+      puts card
+      make_symlink(dir, card)
       doc = Nokogiri::XML(File.open(card))
       # Can't seem to find a way to do this in 1 go - maybe it's XPath 2.0 only
       solution = doc.xpath("//code/@solution").first
@@ -215,7 +225,7 @@ module StarkUtils
   end
 
 
-  private
+  private # --------------------------------------------------------------------
 
   # Gets a non-empty, necessary command argument from the user if the given arguments
   # are non-empty. A block can be supplied optionally to perform input validation
@@ -286,7 +296,34 @@ module StarkUtils
     File.exist?(File.join(start, COURSE_MARKER_FILE))
   end
   
+  # Given a directory that contains a course, it clears all members of its symbolic
+  # links directory.
+  def StarkUtils.clear_symlinks(course_dir)
+    FileUtils.rm_f(Dir.glob(File.join(course_dir, CARD_SYMLINKS_DIR, "*")))
+  end
+
   
+  # Given a directory that contains a course as well as the path of a card file,
+  # it creates a symbolic link in the course's symbolic link directory that points
+  # to the card directory. For example, if the card is at "1 - Ch1/1 - Card1",
+  # .links/1_2 ->  is created.
+  def StarkUtils.make_symlink(course_dir, card_file_path)
+    card_dir = File.dirname(card_file_path)
+    card_dir_name = File.basename(card_dir)
+    chapter_dir_name = File.basename(File.dirname(card_dir))
+    link_name = "#{strip_dir_number(chapter_dir_name)}_#{strip_dir_number(card_dir_name)}"
+    FileUtils.ln_s(File.absolute_path(card_dir), File.join(course_dir, CARD_SYMLINKS_DIR, link_name))
+  end
+  
+
+  # Given a directory name that begins with a number, it strips the number - returns
+  # an empty string otherwise.
+  def StarkUtils.strip_dir_number(dir)
+    dir ? dir.match(/^(?<num>\d+)/) : ""
+  end
+  
+
+  # Creates an XML document out of the course structure residing at the parameter directory.
   def StarkUtils.assemble_course(dir)
     doc = Nokogiri::XML(File.open(File.join(TEMPLATES_DIR, "course.xml")))
     course = doc.root
@@ -312,6 +349,7 @@ module StarkUtils
   end
   
   
+  # Validates the given XML document against the Stark Labs XSD schema.
   def StarkUtils.validate_against_xsd(doc)
     # Need to write out a temp file for accurate error reporting - Nokogiri gives out
     # messed up line numbers otherwise
@@ -324,6 +362,9 @@ module StarkUtils
   end
   
   
+  # Given a string that contains an XML file content, it returns a formatted string
+  # ("pretty-printed") using the default indentation (2 spaces) that also contains
+  # line numbers at the beginning of each line.
   def StarkUtils.pretty_print_xml(xml_s)
     doc = REXML::Document.new(xml_s)
     formatter = REXML::Formatters::Pretty.new
