@@ -4,6 +4,7 @@ require 'fileutils'
 require 'commander/import'
 require 'nokogiri'
 require 'rexml/document'
+require 'yaml'
 
 # TODO Refactor this, it's procedural & monolithic AF
 module StarkUtils
@@ -97,16 +98,27 @@ module StarkUtils
       return
     end
     
-    # TODO: This is Arduino-specific - move to a separate method
-    # if contains_arduino_course?(dir)
-    #  puts "Move this to another method you dumbass"
-    # end
-
+    # Dispatch to platform-specific method
+    platform = get_course_property(dir, "platform")
+    case platform
+    when "arduino"
+      compile_and_test_arduino(dir)
+    else
+      # TODO Add other platforms later
+      message_tail = platform ? "your platform isn't supported (yet?)!" : 
+        "we couldn't detect your platform!"
+      say_warning "We're sorry buddy but #{message_tail}"
+      say_ok "Those platforms are supported:\n" +
+        " 1. Arduino Uno"
+    end
+  end
+    
+    
+  def StarkUtils.compile_and_test_arduino(dir)
     # Generate Makefile dynamically:
     # For every code card in the course, look whether both the test file and the
     # solution files exist. If they do, make a symlink to the card and generate the 
     # targets that will be added to the makefile.
-    
     code_card_files = Dir.glob("#{dir}*/*/" + CODE_CARD_FILE)
     any_error = false
     tests = []
@@ -295,6 +307,14 @@ module StarkUtils
     levels.each { |l| start = File.join(start, l) }
     File.exist?(File.join(start, COURSE_MARKER_FILE))
   end
+  
+  
+  # Retrieves the value for the property of the course at the given directory (if
+  # present). Returns nil if nothing was found.
+  def StarkUtils.get_course_property(course_dir, property)
+    YAML.load_file(File.join(course_dir, COURSE_MARKER_FILE))[property]
+  end
+
   
   # Given a directory that contains a course, it clears all members of its symbolic
   # links directory.
