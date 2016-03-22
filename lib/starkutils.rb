@@ -188,16 +188,17 @@ module StarkUtils
     content << targets.join("\n\n")
     File.open(makefile, "w") { |file| file << content }
 
-    make_output = IO.popen("make -f #{makefile} test") #, :err=>[:child, :out])
+    make_output = IO.popen("make -f #{makefile} test")
     # Figure out if everything was ok - check from  stderr, stdout
+    # This is much dirtier than using "any?" obviously but with popen you get no output
     pass = true
     make_output.each do |line| 
       puts line
-      if line.match(/FAILED/) || line.match(/error(?:s)? generated/)
+      if pass && (line.match(/FAILED/) || line.match(/error(?:s)? generated/))
         pass = false
-        break
       end
     end
+
     say_ok "\nDone compiling/running tests. Cleaning up now...\n"
     system("make -f #{makefile} clean") # Can do a regular call for that
     
