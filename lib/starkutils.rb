@@ -114,6 +114,7 @@ module StarkUtils
   end
     
     
+  # Arduino-specific procedure for compiling and testing a project.
   def StarkUtils.compile_and_test_arduino(dir)
     # Generate Makefile dynamically:
     # For every code card in the course, look whether both the test file and the
@@ -187,13 +188,28 @@ module StarkUtils
     content << targets.join("\n\n")
     File.open(makefile, "w") { |file| file << content }
 
-    system("make -f #{makefile} test") # Any better way to do this?
+    make_output = IO.popen("make -f #{makefile} test") #, :err=>[:child, :out])
+    # Figure out if everything was ok - check from  stderr, stdout
+    pass = true
+    make_output.each do |line| 
+      puts line
+      if line.match(/FAILED/) || line.match(/error(?:s)? generated/)
+        pass = false
+        break
+      end
+    end
     say_ok "\nDone compiling/running tests. Cleaning up now...\n"
-    system("make -f #{makefile} clean")
+    system("make -f #{makefile} clean") # Can do a regular call for that
     
     FileUtils.mv(makefile_bak, makefile)
 
-    say_ok "Done!"
+    if pass
+      say_ok "All good!"
+    else
+      say_warning "You have at least one error."
+    end
+    
+    pass
   end
 
 
